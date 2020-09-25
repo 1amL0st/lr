@@ -190,6 +190,7 @@ name = "lost_ray"
 version = "0.1.0"
 dependencies = [
  "image",
+ "math",
  "rand",
 ]
 
@@ -198,6 +199,10 @@ name = "lzw"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d947cbb889ed21c2a84be6ffbaebf5b4e0f4340638cba0444907e38b56be084"
+
+[[package]]
+name = "math"
+version = "0.1.0"
 
 [[package]]
 name = "maybe-uninit"

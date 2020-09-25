@@ -1,6 +1,3 @@
-use std::io;
-use std::io::Write;
-
 /*
  * Use alt + -> / <- go to previous/next cursor position
 */
@@ -8,117 +5,9 @@ use std::io::Write;
 extern crate image;
 use image::{ RgbImage };
 
-#[derive(Debug)]
-struct Vec3
-{
-    x: f32,
-    y: f32,
-    z: f32
-}
-
-impl Vec3 {
-    fn new(x: f32, y: f32, z: f32) -> Vec3 {
-        Vec3 {x, y, z}
-    }
-
-    fn empty() -> Vec3 {
-        Vec3 {x: 0., y: 0., z: 0.}
-    }
-
-    fn copy(v: &Vec3) -> Vec3 {
-        Vec3 {x: v.x, y: v.y, z: v.z}
-    }
-
-    fn add(&self, v: &Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x + v.x,
-            y: self.y + v.y,
-            z: self.z + v.z
-        }
-    }
-
-    fn sub(&self, v: &Vec3) -> Vec3 {
-        Vec3 {
-            x: self.x - v.x,
-            y: self.y - v.y,
-            z: self.z - v.z }
-    }
-
-    fn len(&self) -> f32 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
-    }
-
-    fn norm(&self) -> Vec3 {
-        let len = self.len();
-        Vec3 {
-            x: self.x / len,
-            y: self.y / len,
-            z: self.z / len
-        }
-    }
-
-    fn dot(&self, v: &Vec3) -> f32 {
-        self.x * v.x + self.y * v.y + self.z * v.z
-    }
-
-    fn scale(&self, s: f32) -> Vec3 {
-        Vec3::new(self.x * s, self.y * s, self.z * s)
-    }
-
-    fn negate(&self) -> Vec3 {
-        Vec3 {
-            x: -self.x,
-            y: -self.y,
-            z: -self.z
-        }
-    }
-
-    fn print(v: &Vec3) {
-        println!{"{:?}", v};
-    }
-}
-
+extern crate math;
+use math::vec3::Vec3;
 use Vec3 as RgbColor;
-
-impl RgbColor {
-    fn norm_color(&self) -> RgbColor {
-        Vec3 {
-            x: f32_max(self.x, 0.),
-            y: f32_max(self.y, 0.),
-            z: f32_max(self.z, 0.)
-        }
-    }
-
-    fn new_color(r: u8, g: u8, b: u8) -> RgbColor {
-        let factor = 1. / 255.;
-        Vec3 {
-            x: (r as f32) * factor,
-            y: (g as f32) * factor,
-            z: (b as f32) * factor
-        }
-    }
-}
-
-// struct RgbColor
-// {
-//     r: u8,
-//     g: u8,
-//     b: u8
-// }
-
-// impl RgbColor {
-//     fn copy(color: &RgbColor) -> RgbColor {
-//         RgbColor {
-//             r: color.r,
-//             g: color.g,
-//             b: color.b
-//         }
-//     }
-
-//     fn new(r: u8, g: u8, b: u8) -> RgbColor {
-//         RgbColor{ r, g, b }
-//     }
-// }   
 
 struct Normal
 {
@@ -267,9 +156,7 @@ impl Geometry for Sphere {
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal {
         let pos = ray.pos.add(&ray.dir.scale(hit_data.t));
         let mut dir = pos.sub(&self.pos);
-        //println!("dir before norm = {:?}", dir);
         dir = dir.norm();
-        //println!("dir after norm = {:?}", dir);
         Normal {
             pos: pos,
             dir: dir
@@ -361,14 +248,6 @@ fn trace(x: u32, y: u32, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_c
         hit_data.normal = hit_obj.get_normal(&ray, &hit_data);
         let angle = hit_data.normal.dir.dot(&ray.dir);
         result_color = hit_obj.get_color(&mut hit_data);
-
-        // let mut r = (result_color.r as f32) - ((result_color.r as f32) * angle);
-        // let mut g = (result_color.g as f32) - ((result_color.g as f32) * angle);
-        // let mut b = (result_color.b as f32) - ((result_color.b as f32) * angle);
-
-        // r = if r < 0. { 0. } else { r };
-        // g = if g < 0. { 0. } else { g };
-        // b = if b < 0. { 0. } else { b };
 
         result_color = result_color.sub(&result_color.scale(angle)).norm_color();
     }
