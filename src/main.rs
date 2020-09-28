@@ -5,187 +5,12 @@
 extern crate image;
 use image::{ RgbImage };
 
-extern crate math;
-use math::vec3::Vec3;
-use Vec3 as RgbColor;
+use math::Vec3;
 
-struct Normal
-{
-    pos: Vec3,
-    dir: Vec3
-}
-
-impl Normal {
-    fn new(pos: Vec3, dir: Vec3) -> Normal {
-        Normal {
-            pos,
-            dir
-        }
-    }
-
-    fn empty() -> Normal {
-        Normal {
-            pos: Vec3::empty(),
-            dir: Vec3::empty()
-        }
-    }
-}
-
-struct HitData {
-    is_hit: bool,
-    t: f32,
-    normal: Normal
-}
-
-impl HitData {
-    fn empty() -> HitData {
-        let is_hit = false;
-        return HitData {
-            is_hit,
-            t: 0.,
-            normal: Normal::empty()
-        }
-    }
-}
-
-trait Geometry {
-    fn hit(&self, ray: &Ray) -> HitData;
-    fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal;
-    fn get_color(&self, hit: &HitData) -> RgbColor;
-}
-
-struct Plane {
-    pos: Vec3,
-    normal: Vec3
-}
-
-impl Plane {
-    fn new(pos: Vec3, normal: Vec3) -> Plane {
-        Plane {
-            pos,
-            normal
-        }
-    }
-}
-
-impl Geometry for Plane {
-    fn hit(&self, ray: &Ray) -> HitData {
-        let point = Vec3::new(0., 0., 0.);
-        let normal = Vec3::new(0., 0., 0.);
-
-        HitData {
-            is_hit: false,
-            t: 0.,
-            normal: Normal::empty()
-        }
-    }
-
-    fn get_color(&self, hit: &HitData) -> RgbColor {
-        RgbColor::new(1., 1., 1.)
-    }
-
-    fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal {
-        Normal::empty()
-    }
-}
-
-struct Sphere {
-    pos: Vec3,
-    radius: f32,
-    color: RgbColor
-}
-
-impl Sphere {
-    fn new(pos: Vec3, radius: f32, color: RgbColor) -> Sphere {
-        Sphere {
-            pos,
-            radius,
-            color
-        }
-    }
-}
-
-fn f32_max(first: f32, second: f32) -> f32 {
-    if first > second {
-        return first
-    }
-    second
-}
-
-fn f32_min(first: f32, second: f32) -> f32 {
-    if first < second {
-        return first
-    }
-    second
-}
-
-impl Geometry for Sphere {
-    fn hit(&self, ray: &Ray) -> HitData {
-        let len = ray.pos.sub(&self.pos);
-        let a = ray.dir.dot(&ray.dir);
-        let b = 2. * ray.dir.dot(&len);
-        let c = len.dot(&len) - self.radius * self.radius;
-        
-        let d = b * b - 4. * a * c;
-
-        let mut is_hit = d >= 0.0;
-        let mut result_t = 0.;
-
-        if is_hit {
-            let sqr = d.sqrt();
-            let t1 = (-b + sqr) / 2. * a;
-            let t2 = (-b - sqr) / 2. * a;
-            if t1 < 0. && t2 < 0. {
-                is_hit = false;
-            } else {
-                result_t = f32_min(t1, t2);
-            }
-        }
-
-        HitData {
-            is_hit: is_hit,
-            t: result_t,
-            normal: Normal::empty()
-        }
-    }
-
-    fn get_color(&self, hit_data: &HitData) -> RgbColor {
-        RgbColor::copy(&self.color)
-    }
-
-    fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal {
-        let pos = ray.pos.add(&ray.dir.scale(hit_data.t));
-        let mut dir = pos.sub(&self.pos);
-        dir = dir.norm();
-        Normal {
-            pos: pos,
-            dir: dir
-        }
-    }
-}
-
-struct Ray
-{
-    pos: Vec3,
-    dir: Vec3
-}
-
-impl Ray
-{
-    fn new(pos: Vec3, dir: Vec3) -> Ray {
-        Ray {
-            pos: pos,
-            dir: dir
-        }
-    }
-
-    fn empty() -> Ray {
-        Ray {
-            pos: Vec3::empty(),
-            dir: Vec3::empty()
-        }
-    }
-}
+mod objects;
+use objects::geometry:: {Geometry, Ray, HitData };
+use objects::sphere::Sphere;
+use objects::plane::Plane;
 
 struct Camera
 {
@@ -224,7 +49,7 @@ impl Camera {
     }
 }
 
-fn trace(x: u32, y: u32, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: RgbColor) -> RgbColor
+fn trace(x: u32, y: u32, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: Vec3) -> Vec3
 {
     let mut result_color = world_color;
     let ray = camera.get_ray(x, y);
@@ -262,14 +87,14 @@ fn render(file_name: &String, image_width: u32, image_height: u32)
 {
     let mut img: RgbImage = image::ImageBuffer::new(image_width, image_height);
 
-    let sphere = Sphere::new(Vec3::new(0., 0., 0.), 0.5, RgbColor::new_color(255, 0, 0));
-    let sphere_1 = Sphere::new(Vec3::new(0.0, 0., 0.), 0.35, RgbColor::new_color(0, 255, 0));
-    let sphere_2 = Sphere::new(Vec3::new(0.0, 0., 0.), 0.25, RgbColor::new_color(0, 0, 255));
-    let sphere_3 = Sphere::new(Vec3::new(-1.3, 0., 0.), 0.1, RgbColor::new_color(0, 255, 255));
-    let sphere_4 = Sphere::new(Vec3::new(1.3, 0., 0.), 0.1, RgbColor::new_color(0, 255, 255));
-    let sphere_5 = Sphere::new(Vec3::new(0.0, 0.5, 0.), 0.1, RgbColor::new_color(0, 255, 255));
-    let sphere_6 = Sphere::new(Vec3::new(0.0, -0.5, 0.), 0.1, RgbColor::new_color(0, 255, 255));
-    let plane = Plane::new(Vec3::new(0., 0., -1.), Vec3::new(0., 0., 1.));
+    let sphere = Sphere::new(Vec3::new(0., 0., 0.), 0.5, Vec3::new_color(255, 0, 0));
+    let sphere_1 = Sphere::new(Vec3::new(0.0, 0., 0.), 0.35, Vec3::new_color(0, 255, 0));
+    let sphere_2 = Sphere::new(Vec3::new(0.0, 0., 0.), 0.25, Vec3::new_color(0, 0, 255));
+    let sphere_3 = Sphere::new(Vec3::new(-1.3, 0., 0.), 0.1, Vec3::new_color(0, 255, 255));
+    let sphere_4 = Sphere::new(Vec3::new(1.3, 0., 0.), 0.1, Vec3::new_color(0, 255, 255));
+    let sphere_5 = Sphere::new(Vec3::new(0.0, 0.5, 0.), 0.1, Vec3::new_color(0, 255, 255));
+    let sphere_6 = Sphere::new(Vec3::new(0.0, -0.5, 0.), 0.1, Vec3::new_color(0, 255, 255));
+    let plane = Plane::new(Vec3::new(0., 0., 0.2), Vec3::new(0., 0.95, 0.05), Vec3::new(0.0, 0., 0.32));
 
     let mut geometry: Vec<Box<Geometry>> = Vec::new();
     geometry.push(Box::new(sphere));
@@ -288,7 +113,7 @@ fn render(file_name: &String, image_width: u32, image_height: u32)
     for y in 0..image_height {
         for x in 0..image_width {
             let mut pixel = *img.get_pixel_mut(x, y);
-            let color = trace(x, y, &geometry, &camera, RgbColor::new_color(0, 0, 0));
+            let color = trace(x, y, &geometry, &camera, Vec3::new_color(0, 0, 0));
 
             pixel[0] = (color.x * 255.) as u8;
             pixel[1] = (color.y * 255.) as u8;
