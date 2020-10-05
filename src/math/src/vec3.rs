@@ -19,6 +19,14 @@ impl Vec3 {
         Vec3 {x: v.x, y: v.y, z: v.z}
     }
 
+    pub fn clone(&self) -> Vec3 {
+        Vec3 {
+            x: self.x,
+            y: self.y,
+            z: self.z
+        }
+    }
+
     pub fn add(&self, v: &Vec3) -> Vec3 {
         Vec3 {
             x: self.x + v.x,
@@ -31,7 +39,8 @@ impl Vec3 {
         Vec3 {
             x: self.x - v.x,
             y: self.y - v.y,
-            z: self.z - v.z }
+            z: self.z - v.z 
+        }
     }
 
     pub fn len(&self) -> f32 {
@@ -64,10 +73,26 @@ impl Vec3 {
     }
 
     pub fn norm_color(&self) -> Vec3 {
+        let mut x = self.x;
+        let mut y = self.y;
+        let mut z = self.z;
+        if self.x < 0. {
+            x = 0.;
+        } else if self.x > 1. {
+            x = 1.;
+        }
+        if self.y < 0.  {
+            y = 0.;
+        } else if self.y > 1. {
+            y = 1.;
+        }
+        if self.z < 0. {
+            z = 0.;
+        } else if self.z > 1. {
+            z = 1.;
+        }
         Vec3 {
-            x: self.x.max(0.),
-            y: self.y.max(0.),
-            z: self.z.max(0.)
+            x, y, z
         }
     }
 

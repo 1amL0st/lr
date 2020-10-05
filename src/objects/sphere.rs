@@ -55,8 +55,7 @@ impl Geometry for Sphere {
 
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal {
         let pos = ray.pos.add(&ray.dir.scale(hit_data.t));
-        let mut dir = pos.sub(&self.pos);
-        dir = dir.norm();
+        let dir = pos.sub(&self.pos).norm();
         Normal {
             pos: pos,
             dir: dir
