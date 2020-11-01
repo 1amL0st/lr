@@ -62,7 +62,7 @@ impl HitData {
     }
 }
 
-pub trait Geometry {
+pub trait Geometry: Send + Sync {
     fn hit(&self, ray: &Ray) -> HitData;
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal;
     fn get_color(&self, hit: &HitData) -> Vec3;

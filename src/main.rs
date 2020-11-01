@@ -104,7 +104,7 @@ fn render(file_name: &String, image_width: u32, image_height: u32) {
 
     let geometry = create_world();
 
-    let sampling_count = 4;
+    let sampling_count = 16;
     //let world_color = Vec3::new_color(255, 255, 255);
     let world_color = Vec3::new_color(0, 0, 0);
 
@@ -129,8 +129,22 @@ fn render(file_name: &String, image_width: u32, image_height: u32) {
 
     thread_works.par_iter_mut().for_each(|work| {
         for i in work.start..work.end {
-            let color = trace(0., 0., &geometry, &camera, world_color);
-            work.pixels.push(color);
+            let x = i % image_width;
+            let y = i / image_width;
+
+            let pixel_x = x as f32 + 0.5;
+            let pixel_y = y as f32 + 0.5;
+            let mut pixel_color = Vec3::empty();
+
+            for count in 0..sampling_count {
+                let x = pixel_x + rand::random::<f32>() - 0.5;
+                let y = pixel_y + rand::random::<f32>() - 0.5;
+                let color = trace(x, y, &geometry, &camera, world_color.clone());
+                pixel_color = pixel_color.add(&color);
+            }
+
+            pixel_color = pixel_color.scale(1. / (sampling_count as f32));
+            work.pixels.push(pixel_color);
         }
     });
 
@@ -246,6 +260,19 @@ fn render(file_name: &String, image_width: u32, image_height: u32) {
     // thread::spawn(|| {
     //     println!("Hello my new thread! {}", var);
     // });
+    thread_works.iter().for_each(|work| {
+        for i in work.start..work.end {
+            let x = i % image_width;
+            let y = i / image_width;
+
+            let mut pixel = *img.get_pixel_mut(x, y);
+            let pixel_color = work.pixels[(i - work.start) as usize];
+            pixel[0] = (pixel_color.x * 255.) as u8;
+            pixel[1] = (pixel_color.y * 255.) as u8;
+            pixel[2] = (pixel_color.z * 255.) as u8;
+            img.put_pixel(x, y, pixel);
+        }
+    });
 
     img.save(file_name).unwrap();
 }

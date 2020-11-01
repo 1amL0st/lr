@@ -1,4 +1,5 @@
 #[derive(Debug)]
+#[derive(Clone, Copy)]
 pub struct Vec3
 {
     pub x: f32,
