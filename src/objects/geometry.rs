@@ -43,6 +43,13 @@ impl Normal {
             dir: Vec3::empty()
         }
     }
+
+    pub fn clone(&self) -> Normal {
+        Normal {
+            pos: self.pos.clone(),
+            dir: self.dir.clone()
+        }
+    }
 }
 
 pub struct HitData {

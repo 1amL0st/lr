@@ -3,6 +3,8 @@ use crate::objects::geometry:: {Geometry, Ray, Normal, HitData };
 extern crate math;
 use math::vec3::Vec3;
 
+use crate::constants;
+
 pub struct Sphere {
     pos: Vec3,
     radius: f32,
@@ -44,7 +46,7 @@ impl Geometry for Sphere {
 
         HitData {
             is_hit: is_hit,
-            t: result_t,
+            t: result_t - constants::EPSILON,
             normal: Normal::empty()
         }
     }
@@ -57,8 +59,8 @@ impl Geometry for Sphere {
         let pos = ray.pos.add(&ray.dir.scale(hit_data.t));
         let dir = pos.sub(&self.pos).norm();
         Normal {
-            pos: pos,
-            dir: dir
+            pos,
+            dir
         }
     }
 }

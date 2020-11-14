@@ -18,14 +18,16 @@ impl Plane {
     }
 }
 
+use crate::constants;
+
 impl Geometry for Plane {
     fn hit(&self, ray: &Ray) -> HitData {
         let n = self.pos.dot(&self.normal) - ray.pos.dot(&self.normal);
         let d = ray.dir.dot(&self.normal);
         let t = n / d;
         HitData {
-            is_hit: t >= 0.,
-            t: t,
+            is_hit: t > 0.,
+            t: t - constants::EPSILON,
             normal: Normal::empty()
         }
     }
@@ -35,7 +37,7 @@ impl Geometry for Plane {
     }
 
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal {
-        let pos = ray.dir.scale(hit_data.t);
+        let pos = ray.pos.add(&(ray.dir.scale(hit_data.t)));
         Normal::new(pos, Vec3::copy(&self.normal))
     }
 }
