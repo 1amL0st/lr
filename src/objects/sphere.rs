@@ -1,18 +1,17 @@
-use crate::objects::geometry:: {Geometry, Ray, Normal, HitData };
+use crate::objects::{ Geometry, Ray, Normal, HitData };
 
-extern crate math;
-use math::vec3::Vec3;
+use nlm;
 
 use crate::constants;
 
 pub struct Sphere {
-    pos: Vec3,
+    pos: nlm::Vec3,
     radius: f32,
-    color: Vec3
+    color: nlm::Vec3
 }
 
 impl Sphere {
-    pub fn new(pos: Vec3, radius: f32, color: Vec3) -> Sphere {
+    pub fn new(pos: nlm::Vec3, radius: f32, color: nlm::Vec3) -> Sphere {
         Sphere {
             pos,
             radius,
@@ -23,7 +22,7 @@ impl Sphere {
 
 impl Geometry for Sphere {
     fn hit(&self, ray: &Ray) -> HitData {
-        let len = ray.pos.sub(&self.pos);
+        let len = ray.pos - self.pos;
         let a = ray.dir.dot(&ray.dir);
         let b = 2. * ray.dir.dot(&len);
         let c = len.dot(&len) - self.radius * self.radius;
@@ -51,13 +50,13 @@ impl Geometry for Sphere {
         }
     }
 
-    fn get_color(&self, hit_data: &HitData) -> Vec3 {
-        Vec3::copy(&self.color)
+    fn get_color(&self, hit_data: &HitData) -> nlm::Vec3 {
+        self.color.clone()
     }
 
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal {
-        let pos = ray.pos.add(&ray.dir.scale(hit_data.t));
-        let dir = pos.sub(&self.pos).norm();
+        let pos = ray.pos + (ray.dir * hit_data.t);
+        let dir = (pos - self.pos);
         Normal {
             pos,
             dir

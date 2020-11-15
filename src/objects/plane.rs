@@ -1,15 +1,15 @@
-use crate::objects::geometry:: {Geometry, Ray, Normal, HitData };
+use crate::objects::{ Geometry, Ray, Normal, HitData };
 
-use math:: { Vec3 };
+use nlm;
 
 pub struct Plane {
-    pub pos: Vec3,
-    pub normal: Vec3,
-    pub color: Vec3
+    pub pos: nlm::Vec3,
+    pub normal: nlm::Vec3,
+    pub color: nlm::Vec3
 }
 
 impl Plane {
-    pub fn new(pos: Vec3, normal: Vec3, color: Vec3) -> Plane {
+    pub fn new(pos: nlm::Vec3, normal: nlm::Vec3, color: nlm::Vec3) -> Plane {
         Plane {
             pos,
             normal,
@@ -32,12 +32,13 @@ impl Geometry for Plane {
         }
     }
 
-    fn get_color(&self, hit: &HitData) -> Vec3 {
-        Vec3::copy(&self.color)
+    fn get_color(&self, hit: &HitData) -> nlm::Vec3 {
+        nlm::Vec3::new(self.color.x, self.color.y, self.color.z)
     }
 
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal {
-        let pos = ray.pos.add(&(ray.dir.scale(hit_data.t)));
-        Normal::new(pos, Vec3::copy(&self.normal))
+        let pos = ray.pos + &(ray.dir * hit_data.t);
+        let n = nlm::Vec3::new(self.normal.x, self.normal.y, self.normal.z);
+        Normal::new(pos, n)
     }
 }

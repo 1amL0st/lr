@@ -1,16 +1,16 @@
 use rayon::prelude::*;
 use std::sync::{Arc, Mutex};
 
+extern crate nalgebra_glm as nlm;
+
 extern crate image;
 use image::{ RgbImage };
 
-use math::Vec3;
-use math::utils::{
-    point_in_unit_sphere
-};
+mod utils;
+use utils::point_in_unit_sphere;
 
 mod objects;
-use objects::geometry:: {Geometry, Ray, HitData };
+use objects::{ Geometry, Ray, HitData };
 
 mod cameras;
 use cameras::camera::Camera;
@@ -19,7 +19,7 @@ mod world;
 
 mod constants;
 
-fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: Vec3, depth: u32, max_depth: u32) -> Vec3 {
+fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: nlm::Vec3, depth: u32, max_depth: u32) -> nlm::Vec3 {
     if geometry.is_empty() {
         return world_color;
     }
@@ -48,12 +48,14 @@ fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color:
         hit_data.normal = hit_obj.get_normal(&ray, &hit_data);
         let normal = hit_data.normal.clone();
 
-        let target = point_in_unit_sphere().add(&normal.pos).add(&normal.dir);
-        let new_ray = Ray::new(normal.pos, target.sub(&normal.pos).norm());
+
+        let target = point_in_unit_sphere() + &normal.pos + &normal.dir;
+        let new_ray_dir = (target - &normal.pos).normalize();
+        let new_ray = Ray::new(normal.pos, new_ray_dir);
         result_color = hit_obj.get_color(&hit_data);
 
-        let new_color = &trace(&new_ray, geometry, camera, world_color, depth + 1, max_depth).scale(0.5);
-        result_color = result_color.add(&new_color);
+        let new_color = &trace(&new_ray, geometry, camera, world_color, depth + 1, max_depth) * 0.5;
+        result_color = result_color + &new_color;
 
     } else {
 
@@ -61,15 +63,15 @@ fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color:
     result_color
 }
 
-fn trace_camera_ray(x: f32, y: f32, geometry: &Vec<Box<Geometry>>, camera: &Camera, render_settings: &RenderSettings) -> Vec3 {
+fn trace_camera_ray(x: f32, y: f32, geometry: &Vec<Box<Geometry>>, camera: &Camera, render_settings: &RenderSettings) -> nlm::Vec3 {
     let ray = camera.get_ray(x, y);
-    let mut result_color = trace(&ray, geometry, camera, render_settings.world_color, 0, render_settings.max_subrays_count);
+    let result_color = trace(&ray, geometry, camera, render_settings.world_color, 0, render_settings.max_subrays_count);
     result_color
 }
 
 struct RenderSettings {
     sampling_count: u32,
-    world_color: Vec3,
+    world_color: nlm::Vec3,
     work_per_thread: u32,
     image_width: u32,
     image_height: u32,
@@ -77,7 +79,7 @@ struct RenderSettings {
 }
 
 impl RenderSettings {
-    fn new(image_width: u32, image_height: u32, sampling_count: u32, world_color: Vec3, max_subrays_count: u32, work_per_thread: u32) -> RenderSettings {
+    fn new(image_width: u32, image_height: u32, sampling_count: u32, world_color: nlm::Vec3, max_subrays_count: u32, work_per_thread: u32) -> RenderSettings {
         RenderSettings {
             sampling_count,
             world_color,
@@ -93,7 +95,7 @@ struct ThreadWork {
     start: u32,
     end: u32,
     id: u32,
-    pixels: Vec<Vec3>,
+    pixels: Vec<nlm::Vec3>,
 }
 
 impl ThreadWork {
@@ -102,7 +104,7 @@ impl ThreadWork {
             start,
             end,
             id,
-            pixels: Vec::<Vec3>::with_capacity(pixels as usize),
+            pixels: Vec::<nlm::Vec3>::with_capacity(pixels as usize),
         }
     }
 }
@@ -113,8 +115,8 @@ fn render(file_name: &String, render_settings: &RenderSettings) {
 
     let mut img: RgbImage = image::ImageBuffer::new(image_width, image_height);
 
-    let camera_dir = Vec3::new(0., 0., -1.);
-    let camera_pos = Vec3::new(0., 0., 10.);
+    let camera_dir = nlm::Vec3::new(0., 0., -1.);
+    let camera_pos = nlm::Vec3::new(0., 0., 10.);
     let camera = Camera::new(camera_pos, camera_dir, 30.0, image_width as f32, image_height as f32);
 
     let geometry = world::create_world();
@@ -150,16 +152,16 @@ fn render(file_name: &String, render_settings: &RenderSettings) {
 
             let pixel_x = x as f32 + 0.5;
             let pixel_y = y as f32 + 0.5;
-            let mut pixel_color = Vec3::empty();
+            let mut pixel_color = nlm::Vec3::zeros();
 
             for _ in 0..sampling_count {
                 let x = pixel_x + rand::random::<f32>() - 0.5;
                 let y = pixel_y + rand::random::<f32>() - 0.5;
                 let color = trace_camera_ray(x, y, &geometry, &camera, render_settings);
-                pixel_color = pixel_color.add(&color);
+                pixel_color = pixel_color + &color;
             }
 
-            pixel_color = pixel_color.scale(1. / (sampling_count as f32));
+            pixel_color = pixel_color * 1. / (sampling_count as f32);
             work.pixels.push(pixel_color);
         }
 
@@ -194,16 +196,23 @@ fn render(file_name: &String, render_settings: &RenderSettings) {
 fn main() {
     let generation_start_time = std::time::Instant::now();
 
-    const SUBRAYS_LIMIT: u32 = 64u32;
-    const SAMPLING_COUNT: u32 = 64u32;
+    const SUBRAYS_LIMIT: u32 = 2u32;
+    const SAMPLING_COUNT: u32 = 2u32;
     const COLOR_VALUE: f32 = 255.;
-    const WORLD_COLOR: Vec3 = Vec3 {
-        x: COLOR_VALUE * 1.0 / 255.,
-        y: COLOR_VALUE * 1.0 / 255.,
-        z: COLOR_VALUE * 1.0 / 255.
-    };
+    const IMAGE_WIDTH: u32 = 720;
+    const IMAGE_HEIGHT: u32 = 360;
+    let world_color: nlm::Vec3 = nlm::Vec3::new(
+        COLOR_VALUE * 1.0 / 255.,
+        COLOR_VALUE * 1.0 / 255.,
+        COLOR_VALUE * 1.0 / 255.
+    );
 
-    let render_settings = RenderSettings::new(720, 360, SAMPLING_COUNT, WORLD_COLOR, SUBRAYS_LIMIT, 32);
+    let render_settings = RenderSettings::new(
+        IMAGE_WIDTH, IMAGE_HEIGHT,
+        SAMPLING_COUNT, world_color,
+         SUBRAYS_LIMIT, 32
+    );
+
     let file_name = format!("./rendered/{}samples.png", render_settings.sampling_count).to_string();
     render(&file_name, &render_settings);
 

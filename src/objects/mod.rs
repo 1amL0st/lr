@@ -1,14 +1,14 @@
-use math::Vec3;
+use nlm;
 
 pub struct Ray
 {
-    pub pos: Vec3,
-    pub dir: Vec3
+    pub pos: nlm::Vec3,
+    pub dir: nlm::Vec3
 }
 
 impl Ray
 {
-    pub fn new(pos: Vec3, dir: Vec3) -> Ray {
+    pub fn new(pos: nlm::Vec3, dir: nlm::Vec3) -> Ray {
         Ray {
             pos: pos,
             dir: dir
@@ -17,20 +17,20 @@ impl Ray
 
     pub fn empty() -> Ray {
         Ray {
-            pos: Vec3::empty(),
-            dir: Vec3::empty()
+            pos: nlm::Vec3::zeros(),
+            dir: nlm::Vec3::zeros()
         }
     }
 }
 
 pub struct Normal
 {
-    pub pos: Vec3,
-    pub dir: Vec3
+    pub pos: nlm::Vec3,
+    pub dir: nlm::Vec3
 }
 
 impl Normal {
-    pub fn new(pos: Vec3, dir: Vec3) -> Normal {
+    pub fn new(pos: nlm::Vec3, dir: nlm::Vec3) -> Normal {
         Normal {
             pos,
             dir
@@ -39,8 +39,8 @@ impl Normal {
 
     pub fn empty() -> Normal {
         Normal {
-            pos: Vec3::empty(),
-            dir: Vec3::empty()
+            pos: nlm::Vec3::new(0., 0., 0.),
+            dir: nlm::Vec3::new(0., 0., 0.)
         }
     }
 
@@ -72,5 +72,8 @@ impl HitData {
 pub trait Geometry: Send + Sync {
     fn hit(&self, ray: &Ray) -> HitData;
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal;
-    fn get_color(&self, hit: &HitData) -> Vec3;
+    fn get_color(&self, hit: &HitData) -> nlm::Vec3;
 }
+
+pub mod sphere;
+pub mod plane;

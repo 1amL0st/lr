@@ -1,10 +1,10 @@
-use math::Vec3;
-use crate::objects::geometry::Ray;
+use crate::objects::Ray;
+use nlm;
 
 pub struct Camera
 {
-    pub pos: Vec3,
-    pub dir: Vec3,
+    pub pos: nlm::Vec3,
+    pub dir: nlm::Vec3,
     pub image_width: f32,
     pub image_height: f32,
     pub norm_width: f32,
@@ -14,7 +14,7 @@ pub struct Camera
 }
 
 impl Camera {
-    pub fn new(pos: Vec3, dir: Vec3, field_of_view_degrees: f32, image_width: f32, image_height: f32) -> Camera {
+    pub fn new(pos: nlm::Vec3, dir: nlm::Vec3, field_of_view_degrees: f32, image_width: f32, image_height: f32) -> Camera {
         Camera {
             pos: pos,
             dir: dir,
@@ -31,6 +31,9 @@ impl Camera {
         pixel_x = ((pixel_x) * self.norm_width - 1.) * self.aspect * self.field_of_view;
         pixel_y = (1. - (pixel_y) * self.norm_height) * self.field_of_view;
 
-        Ray::new(Vec3::new(0., 0., self.pos.z), Vec3::new(pixel_x, pixel_y, self.dir.z).norm())
+        Ray::new(
+            nlm::Vec3::new(0., 0., self.pos.z),
+            nlm::Vec3::new(pixel_x, pixel_y, self.dir.z).normalize()
+        )
     }
 }
