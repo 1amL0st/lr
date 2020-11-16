@@ -1,7 +1,36 @@
 use crate::objects::{ sphere::Sphere, plane::Plane, Geometry };
+use crate::cameras::{ Camera };
 
 use nlm;
 use crate::utils::NlmVec3Ext;
+
+pub struct World {
+    pub objects: Vec<Box<Geometry>>,
+    pub camera: Camera
+}
+
+impl World {
+    pub fn new(objects: Vec<Box<Geometry>>, camera: Camera) -> World {
+        World {
+            objects,
+            camera
+        }
+    }
+
+    pub fn set_camera(&mut self, camera: Camera) {
+        self.camera = camera;
+    }
+
+    pub fn default_for_test(image_width: f32, image_height: f32) -> World {
+        let objects = create_world();
+
+        let camera_dir = nlm::Vec3::new(0., 0., -1.);
+        let camera_pos = nlm::Vec3::new(0., 0., 10.);
+        let camera = Camera::new(camera_pos, camera_dir, 30.0, image_width, image_height);
+
+        World::new(objects, camera)
+    }
+}
 
 pub fn create_world() -> Vec<Box<Geometry>> {
     let color = nlm::Vec3::new_color(0, 0, 0);

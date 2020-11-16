@@ -1,5 +1,8 @@
 use nlm;
 
+pub mod sphere;
+pub mod plane;
+
 pub struct Ray
 {
     pub pos: nlm::Vec3,
@@ -15,7 +18,7 @@ impl Ray
         }
     }
 
-    pub fn empty() -> Ray {
+    pub fn zeros() -> Ray {
         Ray {
             pos: nlm::Vec3::zeros(),
             dir: nlm::Vec3::zeros()
@@ -74,6 +77,3 @@ pub trait Geometry: Send + Sync {
     fn get_normal(&self, ray: &Ray, hit_data: &HitData) -> Normal;
     fn get_color(&self, hit: &HitData) -> nlm::Vec3;
 }
-
-pub mod sphere;
-pub mod plane;
