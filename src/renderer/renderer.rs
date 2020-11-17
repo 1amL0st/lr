@@ -21,7 +21,7 @@ pub struct RenderSettings {
 }
 
 impl RenderSettings {
-    pub fn new(image_width: u32, image_height: u32, sampling_count: u32, world_color: nlm::Vec3, max_subrays_count: u32, work_per_thread: u32) -> RenderSettings {
+    pub fn new(image_width: u32, image_height: u32, sampling_count: u32, max_subrays_count: u32, work_per_thread: u32, world_color: nlm::Vec3) -> RenderSettings {
         RenderSettings {
             sampling_count,
             world_color,
@@ -101,15 +101,13 @@ impl ThreadWork {
     }
 }
 
-pub fn render(file_name: &String, render_settings: &RenderSettings) {
+pub fn render(render_settings: &RenderSettings) -> RgbImage {
     let image_width = render_settings.image_width;
+    let sampling_count = render_settings.sampling_count;
     let image_height = render_settings.image_height;
 
     let mut img: RgbImage = image::ImageBuffer::new(image_width, image_height);
-
     let world = World::default_for_test(image_width as f32, image_height as f32);
-
-    let sampling_count = render_settings.sampling_count;
 
     let work_per_thread = render_settings.work_per_thread; //Pixels
     let total_pixels = (image_width * image_height) as u32;
@@ -182,5 +180,5 @@ pub fn render(file_name: &String, render_settings: &RenderSettings) {
         }
     });
 
-    img.save(file_name).unwrap();
+    img
 }
