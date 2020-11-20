@@ -3,8 +3,7 @@ use nlm;
 
 pub struct Camera
 {
-    pub pos: nlm::Vec3,
-    pub dir: nlm::Vec3,
+    pub matrix: nlm::Mat4x4,
     pub image_width: f32,
     pub image_height: f32,
     pub norm_width: f32,
@@ -14,10 +13,9 @@ pub struct Camera
 }
 
 impl Camera {
-    pub fn new(pos: nlm::Vec3, dir: nlm::Vec3, field_of_view_degrees: f32, image_width: f32, image_height: f32) -> Camera {
+    pub fn new(camera_matrix: &nlm::Mat4x4, field_of_view_degrees: f32, image_width: f32, image_height: f32) -> Camera {
         Camera {
-            pos: pos,
-            dir: dir,
+            matrix: camera_matrix.clone(),
             image_width,
             image_height,
             norm_width: 2. / image_width,
@@ -31,9 +29,15 @@ impl Camera {
         pixel_x = ((pixel_x) * self.norm_width - 1.) * self.aspect * self.field_of_view;
         pixel_y = (1. - (pixel_y) * self.norm_height) * self.field_of_view;
 
+        let mut dir = nlm::Vec4::new(pixel_x, pixel_y, -1., 0.);
+        let mut pos = nlm::Vec4::new(pixel_x, pixel_y, 0., 1.);
+
+        dir = (self.matrix * dir).normalize();
+        pos = self.matrix * pos;
+
         Ray::new(
-            nlm::Vec3::new(0., 0., self.pos.z),
-            nlm::Vec3::new(pixel_x, pixel_y, self.dir.z).normalize()
+            nlm::vec4_to_vec3(&pos),
+            nlm::vec4_to_vec3(&dir)
         )
     }
 }

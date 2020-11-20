@@ -13,7 +13,6 @@ use crate::world:: { World };
 
 pub struct RenderSettings {
     pub sampling_count: u32,
-    pub world_color: nlm::Vec3, //TODO: Maybe this filed must be moved to World struct
     pub work_per_thread: u32,
     pub image_width: u32,
     pub image_height: u32,
@@ -21,10 +20,9 @@ pub struct RenderSettings {
 }
 
 impl RenderSettings {
-    pub fn new(image_width: u32, image_height: u32, sampling_count: u32, max_subrays_count: u32, work_per_thread: u32, world_color: nlm::Vec3) -> RenderSettings {
+    pub fn new(image_width: u32, image_height: u32, sampling_count: u32, max_subrays_count: u32, work_per_thread: u32) -> RenderSettings {
         RenderSettings {
             sampling_count,
-            world_color,
             work_per_thread,
             image_width,
             image_height,
@@ -77,9 +75,9 @@ fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color:
     result_color
 }
 
-fn trace_camera_ray(x: f32, y: f32, geometry: &Vec<Box<Geometry>>, camera: &Camera, render_settings: &RenderSettings) -> nlm::Vec3 {
+fn trace_camera_ray(x: f32, y: f32, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: nlm::Vec3, render_settings: &RenderSettings) -> nlm::Vec3 {
     let ray = camera.get_ray(x, y);
-    let result_color = trace(&ray, geometry, camera, render_settings.world_color, 0, render_settings.max_subrays_count);
+    let result_color = trace(&ray, geometry, camera, world_color, 0, render_settings.max_subrays_count);
     result_color
 }
 
@@ -147,7 +145,7 @@ pub fn render(render_settings: &RenderSettings) -> RgbImage {
                     TODO: This world.objects and world.camera must be refactored in the future!
                     Maybe i should pass only world struct instead os world.objects and world.camera
                 */
-                let color = trace_camera_ray(x, y, &world.objects, &world.camera, render_settings);
+                let color = trace_camera_ray(x, y, &world.objects, &world.camera, world.color.clone(), render_settings);
                 pixel_color = pixel_color + &color;
             }
 
