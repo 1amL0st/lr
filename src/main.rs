@@ -40,6 +40,15 @@ fn select_render_img_path(file_name: &String) -> String {
     }
 }
 
+fn format_mseconds_time(ms: u128) -> String {
+    // TODO: This function mithgt be dangerous (possible panic!)
+    let hours = ms / (3600 * 1000);
+    let minutes = (ms - hours * 3600 * 1000) / (1000 * 60);
+    let seconds = (ms - (hours * 60 + minutes) * 60 * 1000) / 1000;
+    let ms = ms - (hours * 3600 + minutes * 60 + seconds) * 1000;
+    format!("{:02}:{:02}:{:02}:{:02}", hours, minutes, seconds, ms)
+}
+
 fn main() {
     let render_settings = RenderSettings::new(
         720, 360, // Image width and height
@@ -51,9 +60,11 @@ fn main() {
     let mut file_name = format!("./rendered/{}samples.png", render_settings.sampling_count).to_string();
     // file_name = select_render_img_path(&file_name);
 
-    let result_img = render(&render_settings);
-    result_img.save(file_name).unwrap();
+    // let result_img = render(&render_settings);
+    // result_img.save(file_name).unwrap();
+    std::thread::sleep(std::time::Duration::from_millis(1000 * 3 + 22));
 
     let ms = generation_start_time.elapsed().as_millis();
-    println!("Image generation time {}ms", ms);
+    println!("Image generation time in ms = {}", ms);
+    println!("Image generation time {}", format_mseconds_time(ms));
 }
