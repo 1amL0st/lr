@@ -6,7 +6,7 @@ extern crate nalgebra_glm as nlm;
 extern crate image;
 use image::{ RgbImage };
 
-use crate::utils::point_in_unit_sphere;
+use crate::utils;
 use crate::objects::{ Geometry, Ray, HitData };
 use crate::cameras::Camera;
 use crate::world:: { World };
@@ -16,7 +16,7 @@ pub struct RenderSettings {
     pub work_per_thread: u32,
     pub image_width: u32,
     pub image_height: u32,
-    pub max_subrays_count: u32
+    pub max_subrays_count: u32,
 }
 
 impl RenderSettings {
@@ -31,7 +31,7 @@ impl RenderSettings {
     }
 }
 
-fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: nlm::Vec3, depth: u32, max_depth: u32) -> nlm::Vec3 {
+fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: nlm::Vec3, depth: u32, max_depth: u32, rng: &mut rand::rngs::ThreadRng) -> nlm::Vec3 {
     if geometry.is_empty() {
         return world_color;
     }
@@ -60,13 +60,12 @@ fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color:
         hit_data.normal = hit_obj.get_normal(&ray, &hit_data);
         let normal = hit_data.normal.clone();
 
-
-        let target = point_in_unit_sphere() + &normal.pos + &normal.dir;
+        let target = utils::point_in_unit_sphere_custom_rng(rng) + &normal.pos + &normal.dir;
         let new_ray_dir = (target - &normal.pos).normalize();
         let new_ray = Ray::new(normal.pos, new_ray_dir);
         result_color = hit_obj.get_color(&hit_data);
 
-        let new_color = &trace(&new_ray, geometry, camera, world_color, depth + 1, max_depth) * 0.5;
+        let new_color = &trace(&new_ray, geometry, camera, world_color, depth + 1, max_depth, rng) * 0.5;
         result_color = result_color + &new_color;
 
     } else {
@@ -75,25 +74,23 @@ fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color:
     result_color
 }
 
-fn trace_camera_ray(x: f32, y: f32, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: nlm::Vec3, render_settings: &RenderSettings) -> nlm::Vec3 {
-    let ray = camera.get_ray(x, y);
-    let result_color = trace(&ray, geometry, camera, world_color, 0, render_settings.max_subrays_count);
+fn trace_camera_ray(x: f32, y: f32, world: &World, render_settings: &RenderSettings, rng: &mut rand::rngs::ThreadRng) -> nlm::Vec3 {
+    let ray = world.camera.get_ray(x, y);
+    let result_color = trace(&ray, &world.objects, &world.camera, world.color.clone(), 0, render_settings.max_subrays_count, rng);
     result_color
 }
 
 struct ThreadWork {
     start: u32,
     end: u32,
-    id: u32,
     pixels: Vec<nlm::Vec3>,
 }
 
 impl ThreadWork {
-    fn new(start: u32, end: u32, id: u32, pixels: u32) -> ThreadWork {
+    fn new(start: u32, end: u32, pixels: u32) -> ThreadWork {
         ThreadWork {
             start,
             end,
-            id,
             pixels: Vec::<nlm::Vec3>::with_capacity(pixels as usize),
         }
     }
@@ -123,13 +120,14 @@ pub fn render(render_settings: &RenderSettings) -> RgbImage {
     for i in 0..works_count {
         let start = work_per_thread * i;
         let end = (work_per_thread * (i + 1)).min(total_pixels);
-        thread_works.push(ThreadWork::new(start, end, i, work_per_thread));
+        thread_works.push(ThreadWork::new(start, end, work_per_thread));
     }
 
     let done = Arc::new(Mutex::<u32>::new(0));
 
     let render_start_time = std::time::Instant::now();
     thread_works.par_iter_mut().for_each(|work| {
+        let mut rng = rand::thread_rng();
         for i in work.start..work.end {
             let x = i % image_width;
             let y = i / image_width;
@@ -141,11 +139,8 @@ pub fn render(render_settings: &RenderSettings) -> RgbImage {
             for _ in 0..sampling_count {
                 let x = pixel_x + rand::random::<f32>() - 0.5;
                 let y = pixel_y + rand::random::<f32>() - 0.5;
-                /*
-                    TODO: This world.objects and world.camera must be refactored in the future!
-                    Maybe i should pass only world struct instead os world.objects and world.camera
-                */
-                let color = trace_camera_ray(x, y, &world.objects, &world.camera, world.color.clone(), render_settings);
+                
+                let color = trace_camera_ray(x, y, &world, render_settings, &mut rng);
                 pixel_color = pixel_color + &color;
             }
 

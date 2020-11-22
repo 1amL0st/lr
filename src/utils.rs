@@ -30,3 +30,11 @@ pub fn point_in_unit_sphere() -> nlm::Vec3 {
     }
     point
 }
+
+pub fn point_in_unit_sphere_custom_rng(rng: &mut rand::rngs::ThreadRng) -> nlm::Vec3 {
+    let mut point = nlm::Vec3::new(rng.gen_range(-1., 1.), rng.gen_range(-1., 1.), rng.gen_range(-1., 1.));
+    while point.magnitude() >= 1.0 {
+        point = nlm::Vec3::new(rng.gen_range(-1., 1.), rng.gen_range(-1., 1.), rng.gen_range(-1., 1.));
+    }
+    point
+}

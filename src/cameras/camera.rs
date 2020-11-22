@@ -1,6 +1,5 @@
 use crate::objects::Ray;
 use nlm;
-
 pub struct Camera
 {
     pub matrix: nlm::Mat4x4,
@@ -13,9 +12,10 @@ pub struct Camera
 }
 
 impl Camera {
-    pub fn new(camera_matrix: &nlm::Mat4x4, field_of_view_degrees: f32, image_width: f32, image_height: f32) -> Camera {
+    pub fn new(camera_pos: nlm::Vec3, look_at_point: nlm::Vec3, field_of_view_degrees: f32, image_width: f32, image_height: f32) -> Camera {
+        let camera_up = nlm::vec3(0., 1., 0.);
         Camera {
-            matrix: camera_matrix.clone(),
+            matrix: nlm::look_at(&camera_pos, &look_at_point, &camera_up).try_inverse().unwrap(),
             image_width,
             image_height,
             norm_width: 2. / image_width,

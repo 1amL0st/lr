@@ -41,18 +41,6 @@ fn select_render_img_path(file_name: &String) -> String {
 }
 
 fn main() {
-    let matrix = nlm::look_at_lh(
-        &nlm::Vec3::new(0., 0., -1.),
-        &nlm::Vec3::new(0., 0., 0.),
-        &nlm::Vec3::new(0., 1., 0.)
-    );
-
-    let vector = nlm::Vec4::new(1., 0., 0., 1.);
-    let result_vector = matrix * vector;
-
-    println!("transformed vector = {}", result_vector);
-
-    // return;
     let render_settings = RenderSettings::new(
         720, 360, // Image width and height
         2, 2, // Sampling and subrays limit
