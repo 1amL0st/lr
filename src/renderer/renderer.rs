@@ -56,17 +56,22 @@ fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color:
     }
 
     let mut result_color = world_color;
-    if hit_data.is_hit {
-        hit_data.normal = hit_obj.get_normal(&ray, &hit_data);
-        let normal = hit_data.normal.clone();
+    let is_hit = hit_data.is_hit;
+    if is_hit {
+        hit_data.ray = ray.copy();
+        let n = hit_obj.get_normal(&ray, &hit_data);
+        hit_data.normal = n.clone();
+        hit_data.set_face_normal(&ray, &n.dir);
 
-        let target = utils::point_in_unit_sphere_custom_rng(rng) + &normal.pos + &normal.dir;
-        let new_ray_dir = (target - &normal.pos).normalize();
-        let new_ray = Ray::new(normal.pos, new_ray_dir);
-        result_color = hit_obj.get_color(&hit_data);
+        let material = hit_obj.get_mateial();
 
-        let new_color = &trace(&new_ray, geometry, camera, world_color, depth + 1, max_depth, rng) * 0.5;
-        result_color = result_color + &new_color;
+        let mut ray = Ray::zeros();
+        material.scatter(&mut hit_data, &mut result_color, &mut ray);
+        let new_color = &trace(&ray, geometry, camera, world_color, depth + 1, max_depth, rng);
+        //This is odd formula
+        result_color.x = result_color.x * new_color.x;
+        result_color.y = result_color.y * new_color.y;
+        result_color.z = result_color.z * new_color.z;
 
     } else {
 

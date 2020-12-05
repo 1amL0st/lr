@@ -5,6 +5,8 @@ use nlm;
 pub trait NlmVec3Ext {
     fn zeros() -> nlm::Vec3;
     fn new_color(r: u8, g: u8, b: u8) -> nlm::Vec3;
+    fn copy(&self) -> nlm::Vec3;
+    fn reflect(&self, normal: &nlm::Vec3) -> nlm::Vec3;
 }
 
 impl NlmVec3Ext for nlm::Vec3 {
@@ -19,6 +21,14 @@ impl NlmVec3Ext for nlm::Vec3 {
             (g as f32) * factor,
             (b as f32) * factor
         )
+    }
+
+    fn copy (&self) -> nlm::Vec3 {
+        nlm::Vec3::new(self.x, self.y, self.z)
+    }
+
+    fn reflect(&self, normal: &nlm::Vec3) -> nlm::Vec3 {
+        (self - (2.0 * self.dot(normal) * normal)).normalize()
     }
 }
 

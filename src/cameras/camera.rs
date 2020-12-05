@@ -13,9 +13,18 @@ pub struct Camera
 
 impl Camera {
     pub fn new(camera_pos: nlm::Vec3, look_at_point: nlm::Vec3, field_of_view_degrees: f32, image_width: f32, image_height: f32) -> Camera {
-        let camera_up = nlm::vec3(0., 1., 0.);
+        let mut camera_up: nlm::Vec3;
+        // Это какой-то костыль
+        if (camera_pos.x != 0.0) {
+            camera_up = nlm::vec3(0., 1., 0.);
+        } else {
+            camera_up = nlm::vec3(1., 0., 0.);
+        }
+        camera_up = nlm::vec3(0., 1., 0.);
+        
+        let matrix = nlm::look_at(&camera_pos, &look_at_point, &camera_up).try_inverse().unwrap();
         Camera {
-            matrix: nlm::look_at(&camera_pos, &look_at_point, &camera_up).try_inverse().unwrap(),
+            matrix,
             image_width,
             image_height,
             norm_width: 2. / image_width,
