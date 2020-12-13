@@ -100,7 +100,13 @@ impl Material for Dielectric {
         }
 
         let unit_direction = hit_data.ray.dir;
+        // hit_data.normal.dir = nlm::normalize(&hit_data.normal.dir);
         let refracted = Dielectric::refract(&unit_direction, &hit_data.normal.dir, refraction_ratio);
+
+        // println!("unit_direction = {:?}", unit_direction);
+        // println!("{}", hit_data.normal.dir);
+        // println!("{}", nlm::magnitude(&hit_data.normal.dir));
+        // println!("{:?}", hit_data.normal.dir);
 
         *ray = Ray::new(hit_data.normal.pos, refracted);
         true

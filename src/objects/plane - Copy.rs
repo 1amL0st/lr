@@ -52,12 +52,15 @@ impl Geometry for Plane {
         let ray = r.transform_to_matrix(&self.inverse_matrix);
 
         let mut pos = ray.pos + (ray.dir * hit_data.t);
-        let mut dir = self.normal;
+        let mut dir = pos - nlm::Vec3::new(0., 0., 0.);
 
         pos = nlm::vec4_to_vec3(&(self.matrix * nlm::Vec4::new(pos.x, pos.y, pos.z, 1.)));
         dir = nlm::vec4_to_vec3(&(self.matrix * nlm::Vec4::new(dir.x, dir.y, dir.z, 0.)));
 
         Normal::new(pos, dir)
+        // let pos = ray.pos + &(ray.dir * hit_data.t);
+        // let n = nlm::Vec3::new(self.normal.x, self.normal.y, self.normal.z);
+        // Normal::new(pos, n)
     }
 
     fn set_pos(&mut self, new_pos: nlm::Vec3) {

@@ -103,7 +103,6 @@ impl HitData {
 }
 
 use std::sync::Arc;
-// use std::rc::Rc;
 
 pub trait Geometry: Send + Sync {
     fn hit(&self, ray: &Ray) -> HitData;

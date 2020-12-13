@@ -66,28 +66,25 @@ impl World {
     }
 
     pub fn default_test_spheres(objects: &mut Vec<Box<Geometry>>) {
-        objects.push(Sphere::matte_with_color(nlm::vec3(0., 0., 0.), 1., nlm::Vec3::new_color(128, 0, 0)));
-        objects[0].set_pos(nlm::Vec3::new(-3.5, 1., 0.0));
+        objects.push(Sphere::matte_with_color(nlm::vec3(0., 1., 0.0), 1., nlm::Vec3::new_color(128, 0, 0)));
+        // objects.push(Sphere::matte_with_color(nlm::vec3(3.5, 1., 0.0), 1., nlm::Vec3::new_color(0, 128, 0)));
 
-        objects.push(Sphere::matte_with_color(nlm::vec3(0., 0.0, 0.), 1., nlm::Vec3::new_color(0, 128, 0)));
-        objects[1].set_pos(nlm::Vec3::new(3.5, 1., 0.0));
+        // objects.push(Box::new(Sphere::new(
+        //     nlm::vec3(1., 0.75, 1.5),
+        //     0.75,
+        //     std::sync::Arc::new(Metal::new(nlm::Vec3::new_color(200, 200, 200), 0.0))
+        // )));
 
-        objects.push(Box::new(Sphere::new(
-            nlm::vec3(1., 0.75, 1.5),
-            0.75,
-            std::sync::Arc::new(Metal::new(nlm::Vec3::new_color(200, 200, 200), 0.0))
-        )));
-
-        objects.push(Box::new(Sphere::new(
-            nlm::vec3(-1., 0.75, 1.5),
-            0.75,
-            std::sync::Arc::new(Metal::new(nlm::Vec3::new_color(200, 200, 200), 0.15))
-        )));
+        // objects.push(Box::new(Sphere::new(
+        //     nlm::vec3(-1., 0.75, 1.5),
+        //     0.75,
+        //     std::sync::Arc::new(Metal::new(nlm::Vec3::new_color(200, 200, 200), 0.15))
+        // )));
         
-        objects.push(Sphere::matte_with_color(nlm::vec3(0., 0.0, -1.5), 0.5, nlm::Vec3::new_color(0, 128, 0)));
+        // objects.push(Sphere::matte_with_color(nlm::vec3(0., 0.0, -1.5), 0.5, nlm::Vec3::new_color(0, 128, 0)));
 
-        objects.push(Sphere::matte_with_color(nlm::vec3(-2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
-        objects.push(Sphere::matte_with_color(nlm::vec3(2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
+        // objects.push(Sphere::matte_with_color(nlm::vec3(-2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
+        // objects.push(Sphere::matte_with_color(nlm::vec3(2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
 
         objects.push(Box::new(Sphere::new(
             nlm::vec3(-2., 1.0, -3.),

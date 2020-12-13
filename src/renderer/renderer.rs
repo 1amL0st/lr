@@ -6,7 +6,6 @@ extern crate nalgebra_glm as nlm;
 extern crate image;
 use image::{ RgbImage };
 
-use crate::utils;
 use crate::objects::{ Geometry, Ray, HitData };
 use crate::cameras::Camera;
 use crate::world:: { World };
@@ -60,6 +59,11 @@ fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color:
     if is_hit {
         hit_data.ray = ray.copy();
         let n = hit_obj.get_normal(&ray, &hit_data);
+
+        // let m = nlm::magnitude(&n.dir);
+        // if m > 1.5 {
+        //     println!("{}", m);
+        // }
         hit_data.normal = n.clone();
         hit_data.set_face_normal(&ray, &n.dir);
 
@@ -155,9 +159,9 @@ pub fn render(render_settings: &RenderSettings) -> RgbImage {
 
         let mut done_ref = done.lock().unwrap();
         let p = *done_ref * 100 / works_count;
-        if p % 5 == 0 {
-            println!("{}%", p);
-        }
+        // if p % 5 == 0 {
+        //     println!("{}%", p);
+        // }
         *done_ref += 1;
     });
 

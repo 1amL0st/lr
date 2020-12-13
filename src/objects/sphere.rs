@@ -76,10 +76,12 @@ impl Geometry for Sphere {
         pos = nlm::vec4_to_vec3(&(self.matrix * nlm::Vec4::new(pos.x, pos.y, pos.z, 1.)));
         dir = nlm::vec4_to_vec3(&(self.matrix * nlm::Vec4::new(dir.x, dir.y, dir.z, 0.)));
 
-        Normal {
-            pos,
-            dir
-        }
+        // let m = nlm::magnitude(&dir);
+        // if m > 1.5 {
+        //     println!("{}", m);
+        // }
+
+        Normal::new(pos, dir)
     }
 
     fn set_pos(&mut self, new_pos: nlm::Vec3) {
