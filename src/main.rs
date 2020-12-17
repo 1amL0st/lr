@@ -2,7 +2,6 @@ extern crate nalgebra_glm as nlm;
 extern crate image;
 
 mod utils;
-use utils::NlmVec3Ext;
 
 mod objects;
 mod cameras;
@@ -12,7 +11,7 @@ mod materials;
 mod renderer;
 use renderer::renderer::{ RenderSettings, render };
 
-use std::{num::ParseIntError, path};
+use std::{path};
 use std::env;
 use std::fs;
 

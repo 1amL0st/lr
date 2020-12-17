@@ -1,6 +1,6 @@
 use crate::{materials::Dielectric, objects::{ sphere::Sphere, plane::Plane, Geometry }};
 use crate::cameras::{ Camera };
-use crate::materials:: { Lambertian, Material, Metal };
+use crate::materials:: { Lambertian, Metal };
 
 use nlm;
 use crate::utils::NlmVec3Ext;
@@ -9,13 +9,13 @@ use std::sync::Arc;
 // use std::rc::Arc;
 
 pub struct World {
-    pub objects: Vec<Box<Geometry>>,
+    pub objects: Vec<Box<dyn Geometry>>,
     pub camera: Camera,
     pub color: nlm::Vec3
 }
 
 impl World {
-    pub fn new(objects: Vec<Box<Geometry>>, camera: Camera, color: nlm::Vec3) -> World {
+    pub fn new(objects: Vec<Box<dyn Geometry>>, camera: Camera, color: nlm::Vec3) -> World {
         World {
             objects,
             camera,
@@ -31,7 +31,7 @@ impl World {
         return nlm::Vec3::new_color(rng.gen_range(0, 255), rng.gen_range(0, 255), rng.gen_range(0, 255));
     }
 
-    fn random_spheres(objects: &mut Vec<Box<Geometry>>) {
+    fn random_spheres(objects: &mut Vec<Box<dyn Geometry>>) {
         let lambertian = Arc::new(Lambertian::new(nlm::Vec3::new_color(128, 128, 128)));
 
         let mut rng = rand::thread_rng();
@@ -53,7 +53,7 @@ impl World {
         let look_at_point = nlm::Vec3::new(0., 0., 0.);
         let camera = Camera::new(camera_pos, look_at_point, 30.0, image_width, image_height);
 
-        let mut objects: Vec<Box<Geometry>> = Vec::new();
+        let mut objects: Vec<Box<dyn Geometry>> = Vec::new();
         World::random_spheres(&mut objects);
 
         let world_color = nlm::Vec3::new_color(255, 255, 255);
@@ -65,37 +65,29 @@ impl World {
         Box::new(Sphere::new(pos, radius, lambertian))
     }
 
-    pub fn default_test_spheres(objects: &mut Vec<Box<Geometry>>) {
+    pub fn default_test_spheres(objects: &mut Vec<Box<dyn Geometry>>) {
         // objects.push(Sphere::matte_with_color(nlm::vec3(3.5, 1., 0.0), 1., nlm::Vec3::new_color(0, 128, 0)));
 
-        // objects.push(Box::new(Sphere::new(
-        //     nlm::vec3(1., 0.75, 1.5),
-        //     0.75,
-        //     std::sync::Arc::new(Metal::new(nlm::Vec3::new_color(200, 200, 200), 0.0))
-        // )));
-
-        // objects.push(Box::new(Sphere::new(
-        //     nlm::vec3(-1., 0.75, 1.5),
-        //     0.75,
-        //     std::sync::Arc::new(Metal::new(nlm::Vec3::new_color(200, 200, 200), 0.15))
-        // )));
-        
-        // objects.push(Sphere::matte_with_color(nlm::vec3(0., 0.0, -1.5), 0.5, nlm::Vec3::new_color(0, 128, 0)));
-
-        // objects.push(Sphere::matte_with_color(nlm::vec3(-2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
-        // objects.push(Sphere::matte_with_color(nlm::vec3(2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
-        
-        // objects.push(Sphere::matte_with_color(nlm::vec3(-3., 1., 0.0), 1., nlm::Vec3::new_color(128, 0, 0)));
-        // objects.push(Sphere::matte_with_color(nlm::vec3(3., 1., 0.0), 1., nlm::Vec3::new_color(128, 0, 0)));
-
-        // objects.push(Sphere::matte_with_color(nlm::vec3(-3., 1., -5.0), 1., nlm::Vec3::new_color(128, 0, 64)));
-        // objects.push(Sphere::matte_with_color(nlm::vec3(3., 1., -5.0), 1., nlm::Vec3::new_color(128, 0, 64)));
+        objects.push(Sphere::matte_with_color(nlm::vec3(0., 1., 0.0), 1., nlm::Vec3::new_color(128, 0, 0)));
+        objects.push(Sphere::matte_with_color(nlm::vec3(-1., 0.5, -1.0), 0.5, nlm::Vec3::new_color(0, 128, 0)));
 
         objects.push(Box::new(Sphere::new(
-            nlm::vec3(0., 1.0, -3.0),
+            nlm::vec3(-2.0, 1.0, 0.0),
             1.,
             std::sync::Arc::new(Dielectric::new(1.5))
         )));
+
+        objects.push(Box::new(Sphere::new(
+            nlm::vec3(2., 1., 0.),
+            1.0,
+            std::sync::Arc::new(Metal::new(nlm::Vec3::new_color(200, 200, 200), 0.05))
+        )));
+
+        // objects.push(Box::new(Sphere::new(
+        //     nlm::vec3(0., 1.0, -3.0),
+        //     1.,
+        //     std::sync::Arc::new(Dielectric::new(1.5))
+        // )));
 
         objects.push(
             Plane::matte_with_color(nlm::vec3(0., 0., 0.), nlm::vec3(0., 1., 0.), nlm::Vec3::new_color(128, 128, 128))
@@ -103,11 +95,11 @@ impl World {
     }
 
     pub fn default_for_test(image_width: f32, image_height: f32) -> World {
-        let camera_pos = nlm::Vec3::new(0.0, 1., -10.);
+        let camera_pos = nlm::Vec3::new(0.0, 1., 10.);
         let look_at_point = nlm::Vec3::new(0., 0., 0.);
         let camera = Camera::new(camera_pos, look_at_point, 30.0, image_width, image_height);
 
-        let mut objects: Vec<Box<Geometry>> = Vec::new();
+        let mut objects: Vec<Box<dyn Geometry>> = Vec::new();
         World::default_test_spheres(&mut objects);
 
         let world_color = nlm::Vec3::new_color(255, 255, 255);

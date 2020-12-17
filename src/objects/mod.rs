@@ -112,6 +112,6 @@ pub trait Geometry: Send + Sync {
     fn rotate(&mut self, angels: nlm::Vec3);
     fn scale(&mut self, scale: nlm::Vec3);
 
-    fn set_material(&mut self, material: Arc<Material>);
-    fn get_mateial(&self) -> Arc<Material>;
+    fn set_material(&mut self, material: Arc<dyn Material>);
+    fn get_mateial(&self) -> Arc<dyn Material>;
 }

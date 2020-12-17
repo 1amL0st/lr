@@ -7,13 +7,13 @@ use std::sync::Arc;
 
 pub struct Plane {
     pub normal: nlm::Vec3,
-    pub material: Arc<Material>,
+    pub material: Arc<dyn Material>,
     pub inverse_matrix: nlm::Mat4x4,
     pub matrix: nlm::Mat4x4,
 }
 
 impl Plane {
-    pub fn new(pos: nlm::Vec3, normal: nlm::Vec3, material: Arc<Material>) -> Plane {
+    pub fn new(pos: nlm::Vec3, normal: nlm::Vec3, material: Arc<dyn Material>) -> Plane {
         let mut matrix = nlm::identity();
         matrix = nlm::translate(&matrix, &pos);
         let inverse_matrix = matrix.try_inverse().unwrap();
@@ -72,11 +72,11 @@ impl Geometry for Plane {
         
     }
 
-    fn set_material(&mut self, material: Arc<Material>) {
+    fn set_material(&mut self, material: Arc<dyn Material>) {
         self.material = material;
     }
 
-    fn get_mateial(&self) -> Arc<Material> {
+    fn get_mateial(&self) -> Arc<dyn Material> {
         self.material.clone()
     }
 }

@@ -5,19 +5,16 @@ use materials::{ Material, Lambertian };
 use nlm;
 use std::sync::Arc;
 
-// use std::rc::Arc;
-
 use crate::constants;
-
 pub struct Sphere {
     radius: f32,
     matrix: nlm::Mat4x4,
     inverse_matrix: nlm::Mat4x4,
-    material: Arc<Material>
+    material: Arc<dyn Material>
 }
 
 impl Sphere {
-    pub fn new(pos: nlm::Vec3, radius: f32, material: Arc<Material>) -> Sphere {
+    pub fn new(pos: nlm::Vec3, radius: f32, material: Arc<dyn Material>) -> Sphere {
         let mut matrix = nlm::identity();
         matrix = nlm::translate(&matrix, &pos);
         let inverse_matrix = matrix.try_inverse().unwrap();
@@ -93,11 +90,11 @@ impl Geometry for Sphere {
 
     }
 
-    fn set_material(&mut self, material: Arc<Material>) {
+    fn set_material(&mut self, material: Arc<dyn Material>) {
         self.material = material;       
     }
 
-    fn get_mateial(&self) -> Arc<Material> {
+    fn get_mateial(&self) -> Arc<dyn Material> {
         self.material.clone()
     }
 }

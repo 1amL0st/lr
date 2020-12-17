@@ -30,7 +30,7 @@ impl RenderSettings {
     }
 }
 
-fn trace(ray: &Ray, geometry: &Vec<Box<Geometry>>, camera: &Camera, world_color: nlm::Vec3, depth: u32, max_depth: u32, rng: &mut rand::rngs::ThreadRng) -> nlm::Vec3 {
+fn trace(ray: &Ray, geometry: &Vec<Box<dyn Geometry>>, camera: &Camera, world_color: nlm::Vec3, depth: u32, max_depth: u32, rng: &mut rand::rngs::ThreadRng) -> nlm::Vec3 {
     if geometry.is_empty() {
         return world_color;
     }
