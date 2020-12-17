@@ -153,9 +153,9 @@ pub fn render(render_settings: &RenderSettings) -> RgbImage {
 
         let mut done_ref = done.lock().unwrap();
         let p = *done_ref * 100 / works_count;
-        // if p % 5 == 0 {
-        //     println!("{}%", p);
-        // }
+        if p % 5 == 0 {
+            println!("{}%", p);
+        }
         *done_ref += 1;
     });
 

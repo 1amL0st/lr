@@ -90,6 +90,8 @@ impl Dielectric {
     }
 }
 
+use rand::random;
+
 impl Material for Dielectric {
     fn scatter(&self, hit: &mut HitData, color: &mut nlm::Vec3, ray: &mut Ray) -> bool {
         *color = nlm::Vec3::new_color(255, 255, 255);
@@ -106,9 +108,22 @@ impl Material for Dielectric {
         }
 
         let unit_dir = hit.normal.dir;
-        let refracted = Dielectric::refract(&unit_dir, &out_normal, ratio);
 
-        *ray = Ray::new(hit.normal.pos, refracted);
+        let mut cos_theta: f32 = (-unit_dir).dot(&out_normal);
+        cos_theta = cos_theta.min(1.);
+
+        let sin_theta: f32 = (1. - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = ratio * sin_theta > 1.0;
+        let direction: nlm::Vec3;
+
+        if cannot_refract || schlick(cos_theta, ratio) > random::<f32>() {
+            direction = unit_dir.reflect(&hit.normal.dir);
+        } else {
+            direction = Dielectric::refract(&unit_dir, &out_normal, ratio);
+        }
+
+        *ray = Ray::new(hit.normal.pos, direction);
         true
 
 
