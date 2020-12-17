@@ -66,7 +66,6 @@ impl World {
     }
 
     pub fn default_test_spheres(objects: &mut Vec<Box<Geometry>>) {
-        objects.push(Sphere::matte_with_color(nlm::vec3(0., 1., 0.0), 1., nlm::Vec3::new_color(128, 0, 0)));
         // objects.push(Sphere::matte_with_color(nlm::vec3(3.5, 1., 0.0), 1., nlm::Vec3::new_color(0, 128, 0)));
 
         // objects.push(Box::new(Sphere::new(
@@ -85,9 +84,10 @@ impl World {
 
         // objects.push(Sphere::matte_with_color(nlm::vec3(-2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
         // objects.push(Sphere::matte_with_color(nlm::vec3(2., 0.5, -3.), 0.5, nlm::Vec3::new_color(0, 128, 128)));
+        objects.push(Sphere::matte_with_color(nlm::vec3(0., 1., 0.0), 3., nlm::Vec3::new_color(128, 0, 0)));
 
         objects.push(Box::new(Sphere::new(
-            nlm::vec3(-2., 1.0, -3.),
+            nlm::vec3(0., 1.0, -3.0),
             1.,
             std::sync::Arc::new(Dielectric::new(1.5))
         )));

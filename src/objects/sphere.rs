@@ -36,50 +36,83 @@ impl Sphere {
     }
 }
 
+const T_MIN: f32 = 0.0001;
+
 impl Geometry for Sphere {
-    fn hit(&self, r: &Ray) -> HitData {
-        let ray = r.transform_to_matrix(&self.inverse_matrix);
+    fn hit(&self, ray: &Ray) -> HitData {
+        let r = ray.transform_to_matrix(&self.inverse_matrix);
 
-        let len = ray.pos - nlm::Vec3::new(0., 0., 0.);
-        let a = ray.dir.dot(&ray.dir);
-        let b = 2. * ray.dir.dot(&len);
-        let c = len.dot(&len) - self.radius * self.radius;
-        
-        let d = b * b - 4. * a * c;
-
-        let mut is_hit = d >= 0.0;
-        let mut result_t = 0.;
-
-        if is_hit {
-            let sqr = d.sqrt();
-            let t1 = (-b + sqr) / 2. * a;
-            let t2 = (-b - sqr) / 2. * a;
-            if t1 < 0. && t2 < 0. {
-                is_hit = false;
-            } else {
-                result_t = t1.min(t2);
+        let oc = r.pos - nlm::Vec3::new(0., 0., 0.);
+        let a = r.dir.dot(&r.dir);
+        let hb = oc.dot(&r.dir);
+        let c = oc.dot(&oc) - self.radius * self.radius;
+        let discriminant = hb * hb - a * c;
+        if discriminant > 0.0 {
+            let t = (-hb - discriminant.sqrt()) / a;
+            if t >= constants::EPSILON {
+                // let p = r.point_at_parameter(t);
+                let mut hit_data = HitData::empty();
+                hit_data.is_hit = true;
+                hit_data.t = t;
+                return hit_data;
+                // return Some(Hit {
+                //     t: t,
+                //     p: p,
+                //     normal: (p - self.center) / self.radius,
+                //     material: &*self.material
+                // });
+            }
+            let t = (-hb + discriminant.sqrt()) / a;
+            if t >= constants::EPSILON {
+                // let p = r.point_at_parameter(t);
+                let mut hit_data = HitData::empty();
+                hit_data.is_hit = true;
+                hit_data.t = t;
+                return hit_data;
             }
         }
 
+        // None
+
         let mut hit_data = HitData::empty();
-        hit_data.is_hit = is_hit;
-        hit_data.t = result_t - constants::EPSILON;
+        hit_data.is_hit = false;
         hit_data
+
+        // let len = ray.pos - nlm::Vec3::new(0., 0., 0.);
+        // let a = ray.dir.dot(&ray.dir);
+        // let b = 2. * ray.dir.dot(&len);
+        // let c = len.dot(&len) - self.radius * self.radius;
+        
+        // let d = b * b - 4. * a * c;
+
+        // let mut is_hit = d >= 0.0;
+        // let mut result_t = 0.;
+
+        // if is_hit {
+        //     let sqr = d.sqrt();
+        //     let t1 = (-b + sqr) / 2. * a;
+        //     let t2 = (-b - sqr) / 2. * a;
+        //     if t1 < 0. && t2 < 0. {
+        //         is_hit = false;
+        //     } else {
+        //         result_t = t1.min(t2);
+        //     }
+        // }
+
+        // let mut hit_data = HitData::empty();
+        // hit_data.is_hit = is_hit;
+        // hit_data.t = result_t - constants::EPSILON;
+        // hit_data
     }
 
     fn get_normal(&self, r: &Ray, hit_data: &HitData) -> Normal {
         let ray = r.transform_to_matrix(&self.inverse_matrix);
 
         let mut pos = ray.pos + (ray.dir * hit_data.t);
-        let mut dir = pos - nlm::Vec3::new(0., 0., 0.);
+        let mut dir = nlm::normalize(&(pos - nlm::Vec3::new(0., 0., 0.)));
 
         pos = nlm::vec4_to_vec3(&(self.matrix * nlm::Vec4::new(pos.x, pos.y, pos.z, 1.)));
         dir = nlm::vec4_to_vec3(&(self.matrix * nlm::Vec4::new(dir.x, dir.y, dir.z, 0.)));
-
-        // let m = nlm::magnitude(&dir);
-        // if m > 1.5 {
-        //     println!("{}", m);
-        // }
 
         Normal::new(pos, dir)
     }

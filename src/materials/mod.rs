@@ -32,7 +32,7 @@ impl Material for Lambertian {
         }
 
         ray.pos = hit_data.normal.pos;
-        ray.dir = new_ray_dir;
+        ray.dir = nlm::normalize(&new_ray_dir);
 
         *color = self.albedo;
 
@@ -84,31 +84,82 @@ impl Dielectric {
     fn refract(uv: &nlm::Vec3, n: &nlm::Vec3, eoe: f32) -> nlm::Vec3 {
         let cos_theta = nlm::dot(&(-uv), &n).min(1.0);
         let r_out_perp = eoe * (uv + (cos_theta * n));
-        let fabs = (1.0 - nlm::length(&r_out_perp).powi(2)).abs();
+        let fabs = (1.0 - nlm::magnitude(&r_out_perp).powi(2)).abs();
         let r_out_parallel = -fabs.sqrt() * n;
         r_out_perp + r_out_parallel
     }
 }
 
 impl Material for Dielectric {
-    fn scatter(&self, hit_data: &mut HitData, color: &mut nlm::Vec3, ray: &mut Ray) -> bool {
+    fn scatter(&self, hit: &mut HitData, color: &mut nlm::Vec3, ray: &mut Ray) -> bool {
         *color = nlm::Vec3::new_color(255, 255, 255);
 
-        let mut refraction_ratio = self.ir;
-        if !hit_data.front_face {
-            refraction_ratio = 1.0 / self.ir;
+        let out_normal;
+        let ratio;
+
+        if hit.ray.dir.dot(&hit.normal.dir) > 0.0 {
+            ratio = self.ir;
+            out_normal = -hit.normal.dir;
+        } else {
+            ratio = 1.0 / self.ir;
+            out_normal = hit.normal.dir;
         }
 
-        let unit_direction = hit_data.ray.dir;
-        // hit_data.normal.dir = nlm::normalize(&hit_data.normal.dir);
-        let refracted = Dielectric::refract(&unit_direction, &hit_data.normal.dir, refraction_ratio);
+        let unit_dir = hit.normal.dir;
+        let refracted = Dielectric::refract(&unit_dir, &out_normal, ratio);
 
-        // println!("unit_direction = {:?}", unit_direction);
-        // println!("{}", hit_data.normal.dir);
-        // println!("{}", nlm::magnitude(&hit_data.normal.dir));
-        // println!("{:?}", hit_data.normal.dir);
-
-        *ray = Ray::new(hit_data.normal.pos, refracted);
+        *ray = Ray::new(hit.normal.pos, refracted);
         true
+
+
+        // let outward_normal: nlm::Vec3;
+        // let ni_over_nt: f32;
+        // let cosine: f32;
+
+        // if hit.ray.dir.dot(&hit.normal.dir) > 0.0 {
+        //     outward_normal = -hit.normal.dir;
+        //     ni_over_nt = self.ir;
+        //     cosine = self.ir * hit.ray.dir.dot(&hit.normal.dir) / hit.ray.dir.magnitude();
+        // } else {
+        //     outward_normal = hit.normal.dir;
+        //     ni_over_nt = 1.0 / self.ir;
+        //     cosine = -hit.ray.dir.dot(&hit.normal.dir) / hit.ray.dir.magnitude();
+        // }
+
+        // match refract(&hit.ray.dir, &outward_normal, ni_over_nt) {
+        //     Some(refracted) => {
+        //         if random::<f32>()>schlick(cosine, self.ir) {
+        //             ray.pos = hit.normal.pos;
+        //             ray.dir = refracted;
+        //             return true;
+        //             // return Scatter {
+        //             //     color: WHITE,
+        //             //     ray: Some(Ray::new(hit.p, refracted))
+        //             // }
+        //         }
+        //     }
+        //     None => {}
+        // }
+
+        // ray.pos = hit.normal.pos;
+        // ray.dir = hit.ray.dir.reflect(&hit.normal.dir);
+        // true
     }
+}
+
+fn refract(v: &nlm::Vec3, n: &nlm::Vec3, ni_over_nt: f32) -> Option<nlm::Vec3> {
+    let uv = v.normalize();
+    let dt = uv.dot(&n);
+    let discriminant = 1.0 - ni_over_nt.powi(2) * (1.0 - dt.powi(2));
+    if discriminant > 0.0 {
+        let refracted = ni_over_nt * (uv - n * dt) - n * discriminant.sqrt();
+        Some(refracted)
+    } else {
+        None
+    }
+}
+
+fn schlick(cosine: f32, ref_idx: f32) -> f32 {
+    let r0 = ((1.0 - ref_idx) / (1.0 + ref_idx)).powi(2);
+    r0 + (1.0 -r0) * (1.0 - cosine).powi(5)
 }

@@ -12,7 +12,7 @@ mod materials;
 mod renderer;
 use renderer::renderer::{ RenderSettings, render };
 
-use std::path;
+use std::{num::ParseIntError, path};
 use std::env;
 use std::fs;
 
