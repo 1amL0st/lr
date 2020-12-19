@@ -48,3 +48,12 @@ pub fn point_in_unit_sphere_custom_rng(rng: &mut rand::rngs::ThreadRng) -> nlm::
     }
     point
 }
+
+pub fn format_mseconds_time(ms: u128) -> String {
+    // TODO: This function mithgt be dangerous (possible panic!)
+    let hours = ms / (3600 * 1000);
+    let minutes = (ms - hours * 3600 * 1000) / (1000 * 60);
+    let seconds = (ms - (hours * 60 + minutes) * 60 * 1000) / 1000;
+    let ms = ms - (hours * 3600 * 1000 + minutes * 60 * 1000 + seconds * 1000);
+    format!("{:02}:{:02}:{:02}:{:02}", hours, minutes, seconds, ms)
+}

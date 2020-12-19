@@ -41,17 +41,7 @@ fn select_render_img_path(file_name: &String) -> Option<String> {
     }
 }
 
-fn format_mseconds_time(ms: u128) -> String {
-    // TODO: This function mithgt be dangerous (possible panic!)
-    let hours = ms / (3600 * 1000);
-    let minutes = (ms - hours * 3600 * 1000) / (1000 * 60);
-    let seconds = (ms - (hours * 60 + minutes) * 60 * 1000) / 1000;
-    let ms = ms - (hours * 3600 + minutes * 60 + seconds) * 1000;
-    format!("{:02}:{:02}:{:02}:{:02}", hours, minutes, seconds, ms)
-}
-
 fn main() {
-    // println!("{}", nlm::reflect_vec(&nlm::Vec3::new(1., 1., 0.), &nlm::Vec3::new(1.0, 0., 0.)));
     let v = nlm::Vec3::new(1.0, 1.0, 0.);
     let n = nlm::Vec3::new(1., 0., 0.);
 
@@ -67,12 +57,15 @@ fn main() {
 
     let generation_start_time = std::time::Instant::now();
     let mut file_name = format!("./rendered/{}samples.png", render_settings.sampling_count).to_string();
+    /*
+        Если мы буем удалять файл, тогда он закроется в vs code
+        fs::remove_file(file_name.clone());
+    */
     // file_name = select_render_img_path(&file_name).unwrap();
 
     let result_img = render(&render_settings);
     result_img.save(file_name).unwrap();
 
     let ms = generation_start_time.elapsed().as_millis();
-    // println!("Image generation time in ms = {}", ms);
-    println!("Image generation time {}", format_mseconds_time(ms));
+    println!("Image generation time {}", utils::format_mseconds_time(ms));
 }

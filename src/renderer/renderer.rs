@@ -5,6 +5,7 @@ extern crate nalgebra_glm as nlm;
 
 extern crate image;
 use image::{ RgbImage };
+use crate::utils;
 
 use crate::objects::{ Geometry, Ray, HitData };
 use crate::cameras::Camera;
@@ -61,10 +62,11 @@ fn trace(ray: &Ray, geometry: &Vec<Box<dyn Geometry>>, camera: &Camera, world_co
         hit_data.normal = hit_obj.get_normal(&ray, &hit_data);
 
         let material = hit_obj.get_mateial();
-        let mut ray = Ray::zeros();
-        material.scatter(&mut hit_data, &mut result_color, &mut ray);
 
-        let new_color = &trace(&ray, geometry, camera, world_color, depth + 1, max_depth, rng);
+        let scatter = material.scatter(&mut hit_data);
+        result_color = scatter.1;
+
+        let new_color = &trace(&scatter.2, geometry, camera, world_color, depth + 1, max_depth, rng);
 
         //This is odd formula
         result_color.x = result_color.x * new_color.x;
@@ -160,7 +162,7 @@ pub fn render(render_settings: &RenderSettings) -> RgbImage {
     });
 
     let ms = render_start_time.elapsed().as_millis();
-    println!("renderer::render time = {}ms", ms);
+    println!("renderer::render time = {}", utils::format_mseconds_time(ms));
 
     thread_works.iter().for_each(|work| {
         for i in work.start..work.end {
