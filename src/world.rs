@@ -68,6 +68,10 @@ impl World {
     pub fn default_test_spheres(objects: &mut Vec<Box<dyn Geometry>>) {
         objects.push(Sphere::matte_with_color(nlm::vec3(0., 1., 0.0), 1., nlm::Vec3::new_color(0, 0, 128)));
 
+        objects.push(Sphere::matte_with_color(nlm::vec3(3., 0.25, 4.0), 0.25, nlm::Vec3::new_color(128, 0, 128)));
+        objects.push(Sphere::matte_with_color(nlm::vec3(-3., 0.25, 4.0), 0.25, nlm::Vec3::new_color(32, 32, 128)));
+        objects.push(Sphere::matte_with_color(nlm::vec3(1., 0.25, 7.0), 0.25, nlm::Vec3::new_color(0, 128, 128)));
+
         objects.push(Box::new(Sphere::new(
             nlm::vec3(3.0, 1., 0.0),
             1.,
@@ -91,15 +95,14 @@ impl World {
     }
 
     pub fn default_for_test(image_width: f32, image_height: f32) -> World {
-        // let camera_pos = nlm::Vec3::new(0.0, 1., 10.);
-        // let camera_pos = nlm::Vec3::new(-10.0, 10., 0.);
-        let camera_pos = nlm::Vec3::new(0., 1., 10.);
-        let look_at_point = nlm::Vec3::new(0., 0., 4.);
+        let camera_pos = nlm::Vec3::new(0., 0.5, 10.);
+        let look_at_point = nlm::Vec3::new(0., 0.5, 0.);
         let camera = Camera::new(camera_pos, look_at_point, 30.0, image_width, image_height);
 
         let mut objects: Vec<Box<dyn Geometry>> = Vec::new();
         World::default_test_spheres(&mut objects);
 
+        // let world_color = nlm::Vec3::new_color(255, 255, 255);
         let world_color = nlm::Vec3::new_color(255, 255, 255);
         World::new(objects, camera, world_color)
     }
